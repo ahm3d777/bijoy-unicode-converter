@@ -1,68 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Download, Upload, Moon, Sun, Check } from 'lucide-react';
-
-// Bijoy to Unicode mapping table
-const bijoyToUnicodeMap = {
-  // Vowels
-  'A': 'আ', 'B': 'ই', 'C': 'ঈ', 'D': 'উ', 'E': 'ঊ', 'F': 'ঋ',
-  'G': 'এ', 'H': 'ঐ', 'I': 'ও', 'J': 'ঔ',
-  
-  // Consonants
-  'K': 'ক', 'L': 'খ', 'M': 'গ', 'N': 'ঘ', 'O': 'ঙ',
-  'P': 'চ', 'Q': 'ছ', 'R': 'জ', 'S': 'ঝ', 'T': 'ঞ',
-  'U': 'ট', 'V': 'ঠ', 'W': 'ড', 'X': 'ঢ', 'Y': 'ণ',
-  'Z': 'ত', '_': 'থ', '`': 'দ', 'a': 'ধ', 'b': 'ন',
-  'c': 'প', 'd': 'ফ', 'e': 'ব', 'f': 'ভ', 'g': 'ম',
-  'h': 'য', 'i': 'র', 'j': 'ল', 'k': 'শ', 'l': 'ষ',
-  'm': 'স', 'n': 'হ', 'o': 'ড়', 'p': 'ঢ়', 'q': 'য়',
-  'r': 'ৎ', 's': 'ং', 't': 'ঃ', 'u': 'ঁ',
-  
-  // Kar (vowel signs)
-  'v': 'া', 'w': 'ি', 'x': 'ী', 'y': 'ু', 'z': 'ূ',
-  '~': 'ৃ', '^': 'ে', '&': 'ৈ', '*': 'ো', '(': 'ৌ',
-  
-  // Numbers
-  '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
-  '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯',
-  
-  // Special characters
-  '|': '।', '\\': 'ঁ', ')': '্', '}': 'ৈ', ']': 'ৌ',
-  '{': 'ে', '[': 'ো', '+': 'ঃ', '=': 'ৃ',
-  
-  // Additional mappings
-  'Av': 'আ', 'Bv': 'ই', 'Cv': 'ঈ', 'Dv': 'উ', 'Ev': 'ঊ',
-  'Gv': 'এ', 'Hv': 'ঐ', 'Iv': 'ও', 'Jv': 'ঔ',
-  
-  // Hasant (্)
-  '‡': 'ে', 'ˆ': 'ৈ', '‰': 'ৗ', '©': 'র্', '®': 'র্য',
-  
-  // Common Bijoy characters
-  '†': 'ে', '‡': 'ে', 'ˆ': 'ৈ', '‰': 'ৗ', 'Š': 'ৎ',
-  '‹': '্র', 'Œ': '্য', 'Õ': 'আ', '×': 'ো', 'Ø': 'ৌ',
-  'Ù': 'ু', 'Ú': 'ূ', 'Û': 'ৃ', 'Ü': 'ৢ', 'Ý': 'ে',
-  'Þ': 'ৈ', 'ß': 'ো', 'à': 'ৌ', 'á': 'ৗ', 'â': 'ি',
-  'ã': 'ী', 'ä': 'া',
-  
-  // Punctuation
-  '¡': '।', '¢': '॥', '£': 'ঁ', '¤': '৳', '¥': 'ঃ',
-  '§': '্', '¨': '়', 'ª': 'ৗ',
-  
-  // Extended characters
-  '°': '্', '±': '়', '²': 'ৃ', '³': 'ৢ', '´': 'া',
-  'µ': 'ি', '¶': 'ী', '·': 'ু', '¸': 'ূ', '¹': 'ৃ',
-  'º': 'ৢ', '»': 'ে', '¼': 'ৈ', '½': 'ো', '¾': 'ৌ',
-};
-
-// Extended mapping for complex characters
-const complexBijoyMap = {
-  '©': 'র্',
-  '®': 'র্য',
-  'ª': 'ৗ',
-  '¯': '্র',
-  '­': '্য',
-  '¬': '্',
-  '«': '্',
-};
+import { ConvertToUnicode } from 'bijoy-to-unicode-bengali-conversion';
 
 function BijoyConverter() {
   const [inputText, setInputText] = useState('');
@@ -72,59 +10,36 @@ function BijoyConverter() {
   const [fileName, setFileName] = useState('');
 
   useEffect(() => {
-    // Check system preference for dark mode
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setIsDarkMode(prefersDark);
   }, []);
 
-  // Bijoy to Unicode conversion function
+  // Bijoy to Unicode conversion function using NPM package
   const convertBijoyToUnicode = (text) => {
     if (!text) return '';
     
-    let converted = '';
-    let i = 0;
-    
-    while (i < text.length) {
-      let matched = false;
-      
-      // Try to match 2-character sequences first
-      if (i < text.length - 1) {
-        const twoChar = text.substring(i, i + 2);
-        if (bijoyToUnicodeMap[twoChar]) {
-          converted += bijoyToUnicodeMap[twoChar];
-          i += 2;
-          matched = true;
-        } else if (complexBijoyMap[twoChar]) {
-          converted += complexBijoyMap[twoChar];
-          i += 2;
-          matched = true;
-        }
-      }
-      
-      // If no 2-char match, try single character
-      if (!matched) {
-        const char = text[i];
-        if (bijoyToUnicodeMap[char]) {
-          converted += bijoyToUnicodeMap[char];
-        } else if (complexBijoyMap[char]) {
-          converted += complexBijoyMap[char];
-        } else {
-          // Keep the character as-is if no mapping found
-          converted += char;
-        }
-        i++;
-      }
+    try {
+      // Using the NPM package for accurate conversion
+      return ConvertToUnicode('bijoy', text);
+    } catch (error) {
+      console.error('Conversion error:', error);
+      // Fallback: return original text if conversion fails
+      return text;
     }
-    
-    return converted;
   };
 
   // Detect if text contains Bijoy ANSI characters
   const isBijoyText = (text) => {
-    // Check for common Bijoy characters and patterns
-    const bijoyPattern = /[†‡ˆ‰ŠŒÕ×ØÙÚÛÜÝÞßàáâãä¡¢£¤¥§¨ª°±²³´µ¶·¸¹º»¼½¾©®¬«­¯]/;
-    const hasUppercaseLetters = /[A-Z_`]/.test(text);
-    return bijoyPattern.test(text) || (hasUppercaseLetters && /[vwxyz~^&*(){}[\]|\\+=]/.test(text));
+    // Check for common Bijoy special characters (extended ASCII)
+    const bijoyPattern = /[†‡ˆ‰ŠŒÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíî''""•–—˜™š›œž ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÒÓÔ]/;
+    
+    // Check for uppercase letters with kar (common Bijoy pattern)
+    const hasUppercaseWithKar = /[A-Z][vwxyz~^&]/i.test(text);
+    
+    // Check for typical Bijoy lowercase consonants
+    const hasBijoyConsonants = /[a-z]/i.test(text) && /[vwxyz]/i.test(text);
+    
+    return bijoyPattern.test(text) || hasUppercaseWithKar || hasBijoyConsonants;
   };
 
   // Handle text input change
@@ -252,7 +167,7 @@ function BijoyConverter() {
             <textarea
               value={inputText}
               onChange={handleInputChange}
-              placeholder="Paste or type Bijoy ANSI text here...&#10;Example: Õ‡ev → আমি"
+              placeholder="Paste or type Bijoy ANSI text here...&#10;Example: Avwg evsjv‡`k → আমি বাংলাদেশ"
               className={`w-full h-96 p-4 rounded-lg border-2 transition-colors font-mono text-lg resize-none ${
                 isDarkMode
                   ? 'bg-gray-900 border-gray-700 text-gray-200 placeholder-gray-500 focus:border-green-500'
@@ -371,7 +286,7 @@ function BijoyConverter() {
             Powered by AI Converter — Bijoy to Unicode
           </p>
           <p className="text-xs mt-2">
-            Supports all standard Bijoy keyboard characters and kar symbols
+            Using bijoy-to-unicode-bengali-conversion NPM package for accurate conversion
           </p>
         </div>
       </div>
